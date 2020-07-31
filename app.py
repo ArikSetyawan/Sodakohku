@@ -49,7 +49,8 @@ import pymongo, datetime, bson, requests, base64, time, random, string
 
 app = Flask(__name__)
 api = Api(app)
-app.config['MONGO_URI'] = "mongodb://localhost:27017/Sodakohku" 
+# app.config['MONGO_URI'] = "mongodb://localhost:27017/Sodakohku"
+app.config['MONGO_URI'] = "mongodb+srv://ariksetyawan:minuman1234@cluster0.xfhcs.mongodb.net/Sodakohku?retryWrites=true&w=majority"
 mongo = PyMongo(app)
 
 # Payment Gateway Midtrans
