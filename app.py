@@ -381,7 +381,7 @@ class resource_transaksi(Resource):
 								"waktu_payment":waktu_payment,
 								"transaction_id":transaction_id,
 								"va":va,
-								"order_id":order_id
+								"order_id":order_id,
 								"status":"Pending"
 							}
 						)
