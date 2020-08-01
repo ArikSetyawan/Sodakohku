@@ -331,6 +331,7 @@ class resource_transaksi(Resource):
 			pesan = str(data['pesan'])
 			nominal = int(data['nominal'])
 			email = str(data['email'])
+			payment_method = str(data['payment_method'])
 			payment_confirm = False
 			waktu_transaksi = None
 			waktu_payment = None
@@ -338,62 +339,117 @@ class resource_transaksi(Resource):
 			va = None
 			order_id = 'TRX'+''.join(random.choice(string.digits) for _ in range(14))
 
-			cek_user = mongo.db.user.find_one({"_id":ObjectId(id_user)})
-			if cek_user is not None:
+			# available payment_method
+			available_payment_method = ['bca','bni','permata','mandiri']
+
+			if payment_method in available_payment_method:
+				cek_user = mongo.db.user.find_one({"_id":ObjectId(id_user)})
+				if cek_user is not None:
 
 
-				url_inquiry = "https://api.sandbox.midtrans.com/v2/charge"
-				headers = {
-					"Accept":"application/json",
-					"Content-Type":"application/json",
-					"Authorization": "Basic {}".format(base64.b64encode(app.config['SERVER_KEY'].encode("UTF-8")).decode("UTF-8"))
-				}
-				json = {
-					"payment_type":"bank_transfer",
-					"transaction_details":{
-						"order_id":order_id,
-						"gross_amount":nominal
-					},
-					"bank_transfer":{
-						"bank":"bca"
-					},
-					"customer_details": {
-						"email":email,
-						"first_name":donatur
+					url_inquiry = "https://api.sandbox.midtrans.com/v2/charge"
+					headers = {
+						"Accept":"application/json",
+						"Content-Type":"application/json",
+						"Authorization": "Basic {}".format(base64.b64encode(app.config['SERVER_KEY'].encode("UTF-8")).decode("UTF-8"))
 					}
-				}
-				req = requests.post(url_inquiry,headers=headers,json=json)
-				if req.status_code == 200:
-					if req.json()['status_code'] == '201':
-						req = req.json()
-						transaction_id = req['transaction_id']
-						va = req['va_numbers'][0]['va_number']
-						waktu_transaksi = datetime.datetime.strptime(req['transaction_time'], '%Y-%m-%d %H:%M:%S')
-						
-						transaksi = mongo.db.transaksi.insert(
-							{
-								"id_user":id_user,
-								"donatur":donatur,
-								"pesan":pesan,
-								"nominal":nominal,
-								"email":email,
-								"payment_confirm":payment_confirm,
-								"waktu_transaksi":waktu_transaksi,
-								"waktu_payment":waktu_payment,
-								"transaction_id":transaction_id,
-								"va":va,
+					if payment_method == 'bca':
+						json = {
+							"payment_type":"bank_transfer",
+							"transaction_details":{
 								"order_id":order_id,
-								"status":"Pending"
+								"gross_amount":nominal
+							},
+							"bank_transfer":{
+								"bank":"bca"
+							},
+							"customer_details": {
+								"email":email,
+								"first_name":donatur
 							}
-						)
-
-						return jsonify({"status":"success","message":"Transaksi {} Berhasil Dibuat. Silahkan Transfer ke Nomer Rekening : {}".format(order_id,va)})
+						}
+					elif payment_method == 'permata':
+						json = {
+							"payment_type":"bank_transfer",
+							"transaction_details":{
+								"order_id":order_id,
+								"gross_amount":nominal
+							},
+							"bank_transfer":{
+								"bank":"permata",
+								"permata":{
+									"recipient_name":donatur
+								}
+							},
+							"customer_details": {
+								"email":email,
+								"first_name":donatur
+							}
+						}
+					elif payment_method == 'bni':
+						json = {
+							"payment_type":"bank_transfer",
+							"transaction_details":{
+								"order_id":order_id,
+								"gross_amount":nominal
+							},
+							"bank_transfer":{
+								"bank":"bni"
+							},
+							"customer_details": {
+								"email":email,
+								"first_name":donatur
+							}
+						}
+					elif payment_method == 'mandiri':
+						json = {
+							"payment_type":"echannel",
+							"transaction_details":{
+								"order_id":order_id,
+								"gross_amount":nominal
+							},
+							"customer_details": {
+								"email":email,
+								"first_name":donatur
+							}
+						}
 					else:
-						return jsonify({"status":"error","message":"something Wrong"})
+						pass
+					req = requests.post(url_inquiry,headers=headers,json=json)
+					if req.status_code == 200:
+						if req.json()['status_code'] == '201':
+							req = req.json()
+							transaction_id = req['transaction_id']
+							va = req['va_numbers'][0]['va_number']
+							waktu_transaksi = datetime.datetime.strptime(req['transaction_time'], '%Y-%m-%d %H:%M:%S')
+							
+							transaksi = mongo.db.transaksi.insert(
+								{
+									"id_user":id_user,
+									"donatur":donatur,
+									"pesan":pesan,
+									"nominal":nominal,
+									"email":email,
+									"payment_confirm":payment_confirm,
+									"waktu_transaksi":waktu_transaksi,
+									"waktu_payment":waktu_payment,
+									"transaction_id":transaction_id,
+									"payment_method":payment_method,
+									"va":va,
+									"order_id":order_id,
+									"status":"Pending"
+								}
+							)
+
+							return jsonify({"status":"success","message":"Transaksi {} Berhasil Dibuat. Silahkan Transfer ke {} Nomer Rekening : {}".format(order_id,payment_method,va)})
+						else:
+							return jsonify({"status":"error","message":"something Wrong"})
+					else:
+						return jsonify({"status":"error","message":"Payment Gateway Error"})
 				else:
-					return jsonify({"status":"error","message":"Payment Gateway Error"})
+					return jsonify({"status":"error","message":"User Not Found"})
 			else:
-				return jsonify({"status":"error","message":"User Not Found"})
+				return jsonify({"status":"error","message":"Payment Method Not Found"})
 		except bson.errors.InvalidId:
 			return jsonify({"status":"error",'message':"InvalidId"})
 		except pymongo.errors.DuplicateKeyError as e:
