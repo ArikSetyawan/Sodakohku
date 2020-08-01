@@ -332,7 +332,7 @@ class resource_transaksi(Resource):
 			nominal = int(data['nominal'])
 			email = str(data['email'])
 			payment_confirm = False
-			waktu_transaksi = datetime.datetime.now()
+			waktu_transaksi = None
 			waktu_payment = None
 			transaction_id = None
 			va = None
@@ -368,6 +368,7 @@ class resource_transaksi(Resource):
 						req = req.json()
 						transaction_id = req['transaction_id']
 						va = req['va_numbers'][0]['va_number']
+						waktu_transaksi = datetime.datetime.strptime(req['transaction_time'], '%Y-%m-%d %H:%M:%S')
 						
 						transaksi = mongo.db.transaksi.insert(
 							{
