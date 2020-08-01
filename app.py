@@ -417,8 +417,11 @@ class Resource_Notification_Callback(Resource):
 				# get transaction
 				query_transaksi = mongo.db.transaksi.find_one({'order_id':order_id})
 
+				# get user
+				query_user = mongo.db.user.find_one({'_id':ObjectId(query_transaksi['id_user'])})
+
 				# update saldo user
-				update_saldo = mongo.db.user.update({'_id':ObjectId(query_transaksi['id_user'])},{'$set':{'saldo':query_transaksi['nominal']}})
+				update_saldo = mongo.db.user.update({'_id':ObjectId(query_transaksi['id_user'])},{'$set':{'saldo':query_transaksi['nominal'] + query_user['saldo']}})
 
 			elif transaction_status == "expire":
 				update_status_transaksi = mongo.db.transaksi.update({'order_id':order_id},{"$set":{"status":transaction_status}})
