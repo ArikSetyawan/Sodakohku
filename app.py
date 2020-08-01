@@ -40,6 +40,7 @@ import pymongo, datetime, bson, requests, base64, time, random, string
 # 	waktu_payment = DateTimeField(null=True)
 # 	transaction_id = CharField(unique=True)
 #	va = CharField()
+# 	status = CharField()
 
 
 # def create_tables():
@@ -381,6 +382,7 @@ class resource_transaksi(Resource):
 								"transaction_id":transaction_id,
 								"va":va,
 								"order_id":order_id
+								"status":"Pending"
 							}
 						)
 
@@ -404,7 +406,24 @@ class Resource_Notification_Callback(Resource):
 	def post(self):
 		try:
 			data = request.json
-			print(data)
+
+			transaction_status = data['transaction_status']
+			order_id = data['order_id']
+			if transaction_status == "settlement":
+				settlement_time =  datetime.datetime.strptime(data['settlement_time'], '%Y-%m-%d %H:%M:%S')
+				update_status_transaksi = mongo.db.transaksi.update({'order_id':order_id},{"$set":{"status":"Complete","waktu_payment":settlement_time,"payment_confirm":True}})
+				
+				# get transaction
+				query_transaksi = mongo.db.transaksi.find_one({'order_id':order_id})
+
+				# update saldo user
+				update_saldo = mongo.db.user.update({'_id':ObjectId(query_transaksi['id_user'])},{'$set':{'saldo':query_transaksi['nominal']}})
+
+			elif transaction_status == "expire":
+				update_status_transaksi = mongo.db.transaksi.update({'order_id':order_id},{"$set":{"status":transaction_status}})
+			else:
+				pass
+
 			return "oke"
 		except KeyError:
 			return jsonify({"status":"error","message":"Invalid Key"})
