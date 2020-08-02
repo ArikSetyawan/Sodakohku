@@ -42,6 +42,18 @@ import pymongo, datetime, bson, requests, base64, time, random, string
 #	va = CharField()
 # 	status = CharField()
 
+# class payout(BaseModel):
+# 	id = AutoField()
+# 	payout_id = CharField(unique = True)
+# 	id_user = ForeignKeyField(user)
+# 	nominal = IntegerField()
+# 	bank_name = CharField()
+# 	nomor_rekening = IntegerField()
+# 	nama_rekening = CharField()
+# 	payout_request_time = DateTimeField()
+# 	payout_complete_time = DateTimeField()
+# 	payout_status = CharField(default='pending')
+# 	payout_complete_status = BooleanField(default=False)
 
 # def create_tables():
 # 	with database:
@@ -134,9 +146,12 @@ class resource_user(Resource):
 	def get(self):
 		parser = reqparse.RequestParser()
 		parser.add_argument('id_user',type=str,help='id_user,must_str')
+		parser.add_argument("username",type=str,help='username, must str')
 		args = parser.parse_args()
 
-		if args['id_user'] is None:
+		if args['id_user'] is not None and args['username'] is not None:
+			return jsonify({"status":'error',"message":"Tolong Pilih Salah Satu Parameter"})
+		elif args['id_user'] is None and args['username'] is None:
 			try:
 				data_user = []
 				query_user = mongo.db.user.find()
@@ -158,7 +173,7 @@ class resource_user(Resource):
 				return jsonify({"status":"success",'data':data_user})
 			except bson.errors.InvalidId:
 				return jsonify({"status":"error",'message':"InvalidId"})
-		else:
+		elif args['id_user'] is not None:
 			try:
 				query_user = mongo.db.user.find_one({'_id':ObjectId(args['id_user'])})
 				if query_user is not None:
@@ -179,6 +194,24 @@ class resource_user(Resource):
 				return jsonify({"status":"error","message":"user not found"})
 			except bson.errors.InvalidId:
 				return jsonify({"status":"error",'message':"InvalidId"})
+		else:
+			query_user = mongo.db.user.find_one({'username':ObjectId(args['username'])})
+			if query_user is not None:
+				data_user = {}
+				data_user['id_user'] = str(query_user['_id'])
+				data_user['id_level'] = str(query_user['id_level'])
+				query_level_user = mongo.db.level_user.find_one({'_id':ObjectId(query_user['id_level'])})
+				if query_level_user is not None:
+					data_user['nama_level'] = query_level_user['nama_level']
+				else:
+					pass
+				data_user['email'] = query_user['email']
+				data_user['username'] = query_user['username']
+				data_user['password'] = query_user['password']
+				data_user['saldo'] = query_user['saldo']
+				data_user['email_verify'] = query_user['email_verify']
+				return jsonify({'status':"success",'data':data_user})
+			return jsonify({"status":"error","message":"user not found"})
 
 	def post(self):
 		try:
@@ -260,9 +293,12 @@ class resource_transaksi(Resource):
 	def get(self):
 		parser = reqparse.RequestParser()
 		parser.add_argument('id_user',type=str, help='id_user, must str')
+		parser.add_argument('order_id',type=str, help='order_id, must str')
 		args = parser.parse_args()
 
-		if args['id_user'] is None:
+		if args['id_user'] is not None and args['order_id'] is not None:
+			return jsonify({"status":"error","message":"Tolong pilih salah satu parameter"})
+		elif args['id_user'] is None and args['order_id'] is None:
 			data_transaksi = []
 			query_all_transaksi = mongo.db.transaksi.find()
 			for i in query_all_transaksi:
@@ -279,9 +315,28 @@ class resource_transaksi(Resource):
 				data['transaction_id'] = i['transaction_id']
 				data['va'] = i['va']
 				data['order_id'] = i['order_id']
+				# get user/receiver
+				query_user = mongo.db.user.find_one({'_id':ObjectId(i['id_user'])})
+				if query_user is not None:
+					data_user = {}
+					data_user['id_user'] = str(query_user['_id'])
+					data_user['id_level'] = str(query_user['id_level'])
+					query_level_user = mongo.db.level_user.find_one({'_id':ObjectId(query_user['id_level'])})
+					if query_level_user is not None:
+						data_user['nama_level'] = query_level_user['nama_level']
+					else:
+						pass
+					data_user['email'] = query_user['email']
+					data_user['username'] = query_user['username']
+					data_user['password'] = query_user['password']
+					data_user['saldo'] = query_user['saldo']
+					data_user['email_verify'] = query_user['email_verify']
+					data['receiver'] = data_user
+				else:
+					data["receiver"] = {}
 				data_transaksi.append(data)
 			return jsonify({"status":"success","data":data_transaksi})
-		else:
+		elif args['id_user'] is not None:
 			try:
 				cek_user = mongo.db.user.find_one({'_id':ObjectId(args['id_user'])})
 				if cek_user is not None:
@@ -321,6 +376,45 @@ class resource_transaksi(Resource):
 					return jsonify({"status":"error","message":"User Not Found"})
 			except bson.errors.InvalidId:
 				return jsonify({"status":"error",'message':"InvalidId"})
+		else:
+			# query transaksi by order_id
+			query_transaksi = mongo.db.transaksi.find_one({"order_id":args['order_id']})
+			if query_transaksi is not None:
+				data_transaksi = {
+					'id':str(query_transaksi['_id']),
+					"id_user":query_transaksi['id_user'],
+					"donatur":query_transaksi['donatur'],
+					"pesan":query_transaksi['pesan'],
+					"nominal":query_transaksi['nominal'],
+					"email":query_transaksi['email'],
+					"payment_confirm":query_transaksi['payment_confirm'],
+					"waktu_transaksi":query_transaksi['waktu_transaksi'],
+					"waktu_payment":query_transaksi['waktu_payment'],
+					"transaction_id":query_transaksi['transaction_id'],
+					"va":query_transaksi['va'],
+					"order_id":query_transaksi['order_id']
+				}
+				query_user = mongo.db.user.find_one({'_id':ObjectId(query_transaksi['id_user'])})
+				if query_user is not None:
+					data_user = {}
+					data_user['id_user'] = str(query_user['_id'])
+					data_user['id_level'] = str(query_user['id_level'])
+					query_level_user = mongo.db.level_user.find_one({'_id':ObjectId(query_user['id_level'])})
+					if query_level_user is not None:
+						data_user['nama_level'] = query_level_user['nama_level']
+					else:
+						pass
+					data_user['email'] = query_user['email']
+					data_user['username'] = query_user['username']
+					data_user['password'] = query_user['password']
+					data_user['saldo'] = query_user['saldo']
+					data_user['email_verify'] = query_user['email_verify']
+				else:
+					data_user = {}
+				return jsonify({"status":"success","data":{"user":data_user,"transaction":data_transaksi}})
+			else:
+				return jsonify({"status":"error","message":"transaction not found"})
+
 
 	def post(self):
 		try:
@@ -340,7 +434,10 @@ class resource_transaksi(Resource):
 			order_id = 'TRX'+''.join(random.choice(string.digits) for _ in range(14))
 
 			# available payment_method
-			available_payment_method = ['bca','bni','permata','mandiri']
+			available_payment_method = ['bca','bni','permata']
+
+			if nominal < 10000:
+				return jsonify({"status":"error","message":"Nominal Terlalu Kecil"})
 
 			if payment_method in available_payment_method:
 				cek_user = mongo.db.user.find_one({"_id":ObjectId(id_user)})
@@ -401,27 +498,26 @@ class resource_transaksi(Resource):
 								"first_name":donatur
 							}
 						}
-					elif payment_method == 'mandiri':
-						json = {
-							"payment_type":"echannel",
-							"transaction_details":{
-								"order_id":order_id,
-								"gross_amount":nominal
-							},
-							"customer_details": {
-								"email":email,
-								"first_name":donatur
-							}
-						}
 					else:
 						pass
 					req = requests.post(url_inquiry,headers=headers,json=json)
 					if req.status_code == 200:
 						if req.json()['status_code'] == '201':
 							req = req.json()
-							transaction_id = req['transaction_id']
-							va = req['va_numbers'][0]['va_number']
-							waktu_transaksi = datetime.datetime.strptime(req['transaction_time'], '%Y-%m-%d %H:%M:%S')
+							if payment_method == 'permata':
+								transaction_id = req['transaction_id']
+								va = req['permata_va_number']
+								waktu_transaksi = datetime.datetime.strptime(req['transaction_time'], '%Y-%m-%d %H:%M:%S')
+							elif payment_method == 'bca':
+								transaction_id = req['transaction_id']
+								va = req['va_numbers'][0]['va_number']
+								waktu_transaksi = datetime.datetime.strptime(req['transaction_time'], '%Y-%m-%d %H:%M:%S')
+							elif payment_method == 'bni':
+								transaction_id = req['transaction_id']
+								va = req['va_numbers'][0]['va_number']
+								waktu_transaksi = datetime.datetime.strptime(req['transaction_time'], '%Y-%m-%d %H:%M:%S')
+							else:
+								pass
 							
 							transaksi = mongo.db.transaksi.insert(
 								{
@@ -490,12 +586,204 @@ class Resource_Notification_Callback(Resource):
 		except TypeError:
 			return jsonify({"status":"error","message":"More Data required"})
 
+class Resource_payout(Resource):
+	def get(self):
+		parser = reqparse.RequestParser()
+		parser.add_argument('id_user',type=str,help='id_user must str')
+		parser.add_argument('payout_id', type=str, help='payout_id, must str')
+		args = parser.parse_args()
+
+		if args['id_user'] is not None and args['payout_id'] is not None:
+			return jsonify({"status":"error",'message':'Tolong Pilih Salah satu parameter'})
+		elif args['id_user'] is None and args['payout_id'] is None:
+			data_payout = []
+			query_all_payout = mongo.db.payout.find()
+			for i in query_all_payout:
+				data  = {}
+				data['id'] = str(i['_id'])
+				data['payout_id'] = i['payout_id']
+				data['id_user'] = i['id_user']
+				data['nominal'] = i['nominal']
+				data['bank_name'] = i['bank_name']
+				data['nomor_rekening'] = i['nomor_rekening']
+				data['nama_rekening'] = i['nama_rekening']
+				data['payout_request_time'] = i['payout_request_time']
+				data['payout_complete_time'] = i['payout_complete_time']
+				data['payout_status'] = i['payout_status']
+				data['payout_complete_status'] = i['payout_complete_status']
+				# get user
+				query_user = mongo.db.user.find_one({'_id':ObjectId(i['id_user'])})
+				if query_user is not None:
+					data_user = {}
+					data_user['id_user'] = str(query_user['_id'])
+					data_user['id_level'] = str(query_user['id_level'])
+					query_level_user = mongo.db.level_user.find_one({'_id':ObjectId(query_user['id_level'])})
+					if query_level_user is not None:
+						data_user['nama_level'] = query_level_user['nama_level']
+					else:
+						pass
+					data_user['email'] = query_user['email']
+					data_user['username'] = query_user['username']
+					data_user['password'] = query_user['password']
+					data_user['saldo'] = query_user['saldo']
+					data_user['email_verify'] = query_user['email_verify']
+					data['user'] = data_user
+				else:
+					data["user"] = {}
+				data_payout.append(data)
+			return jsonify({"status":"success","data":data_payout})
+		elif args['id_user'] is not None:
+			try:
+				# cek user
+				cek_user = mongo.db.user.find_one({'_id':ObjectId(args['id_user'])})
+				if cek_user is not None:
+					data_user = {}
+					data_user['id_user'] = str(cek_user['_id'])
+					data_user['id_level'] = str(cek_user['id_level'])
+					query_level_user = mongo.db.level_user.find_one({'_id':ObjectId(cek_user['id_level'])})
+					if query_level_user is not None:
+						data_user['nama_level'] = query_level_user['nama_level']
+					else:
+						pass
+					data_user['email'] = cek_user['email']
+					data_user['username'] = cek_user['username']
+					data_user['password'] = cek_user['password']
+					data_user['saldo'] = cek_user['saldo']
+					data_user['email_verify'] = cek_user['email_verify']
+
+					data_payout = []
+					query_payout = mongo.db.payout.find({'id_user':args['id_user']})
+					for i in query_payout:
+						data  = {}
+						data['id'] = str(i['_id'])
+						data['payout_id'] = i['payout_id']
+						data['id_user'] = i['id_user']
+						data['nominal'] = i['nominal']
+						data['bank_name'] = i['bank_name']
+						data['nomor_rekening'] = i['nomor_rekening']
+						data['nama_rekening'] = i['nama_rekening']
+						data['payout_request_time'] = i['payout_request_time']
+						data['payout_complete_time'] = i['payout_complete_time']
+						data['payout_status'] = i['payout_status']
+						data['payout_complete_status'] = i['payout_complete_status']
+						data_payout.append(data)
+					return jsonify({"status":"success","data":{"payout":data_payout,"user":data_user}})
+				else:
+					return jsonify({"status":"errors","data":"User not Found"})
+			except bson.errors.InvalidId:
+				return jsonify({"status":"error",'message':"InvalidId"})
+		else:
+			# query payout
+			query_payout = mongo.db.payout.find_one({'payout_id':args['payout_id']})
+			if query_payout is not None:
+				data_payout = {}
+				data_payout['id'] = str(query_payout['_id'])
+				data_payout['payout_id'] = query_payout['payout_id']
+				data_payout['id_user'] = query_payout['id_user']
+				data_payout['nominal'] = query_payout['nominal']
+				data_payout['bank_name'] = query_payout['bank_name']
+				data_payout['nomor_rekening'] = query_payout['nomor_rekening']
+				data_payout['nama_rekening'] = query_payout['nama_rekening']
+				data_payout['payout_request_time'] = query_payout['payout_request_time']
+				data_payout['payout_complete_time'] = query_payout['payout_complete_time']
+				data_payout['payout_status'] = query_payout['payout_status']
+				data_payout['payout_complete_status'] = query_payout['payout_complete_status']
+				
+				query_user = mongo.db.user.find_one({'_id':ObjectId(query_payout['id_user'])})
+				if query_user is not None:
+					data_user = {}
+					data_user['id_user'] = str(query_user['_id'])
+					data_user['id_level'] = str(query_user['id_level'])
+					query_level_user = mongo.db.level_user.find_one({'_id':ObjectId(query_user['id_level'])})
+					if query_level_user is not None:
+						data_user['nama_level'] = query_level_user['nama_level']
+					else:
+						pass
+					data_user['email'] = query_user['email']
+					data_user['username'] = query_user['username']
+					data_user['password'] = query_user['password']
+					data_user['saldo'] = query_user['saldo']
+					data_user['email_verify'] = query_user['email_verify']
+				else:
+					data_user = {}
+
+				return jsonify({"status":"success","data":{"user":data_user,"payout":data_payout}})
+			else:
+				return jsonify({"status":"error","message":"payout not found"})
+
+	def post(self):
+		try:
+			data = request.json
+			payout_id = 'PAYOUT'+''.join(random.choice(string.digits) for _ in range(14))
+			id_user = str(data['id_user'])
+			nominal = int(data['nominal'])
+			bank_name = str(data['bank_name'])
+			nomor_rekening = int(data['nomor_rekening'])
+			nama_rekening = str(data['nama_rekening'])
+			payout_request_time = datetime.datetime.now()
+			payout_complete_time = None
+			payout_status = "pending"
+			payout_complete_status = False
+
+			# cek nominal lebih dari 100000
+			if nominal < 100000:
+				return jsonify({"status":"error","message":"Nominal Kurang"})
+
+			# cek user dan saldo
+			query_user = mongo.db.user.find_one({'_id':ObjectId(id_user)})
+			if query_user is not None:
+				if query_user['saldo'] >= nominal:
+					# insert to db
+					payout_data = {
+						"payout_id":payout_id,
+						"id_user":id_user,
+						"nominal":nominal,
+						"bank_name":bank_name,
+						"nomor_rekening":nomor_rekening,
+						"nama_rekening":nama_rekening,
+						"payout_request_time":payout_request_time,
+						"payout_complete_time":payout_complete_time,
+						"payout_status":payout_status,
+						"payout_complete_status":payout_complete_status
+					}
+					insert_payout = mongo.db.payout.insert(payout_data)
+					# Update Saldo User
+					update_saldo = mongo.db.user.update({"_id":ObjectId(id_user)},{"$set":{"saldo":query_user['saldo']-nominal}})
+
+					response = {
+						"payout_id":payout_id,
+						"id_user":str(query_user['_id']),
+						"nominal":nominal,
+						"bank_name":bank_name,
+						"nomor_rekening":nomor_rekening,
+						"nama_rekening":nama_rekening,
+						"payout_request_time":payout_request_time,
+						"payout_complete_time":payout_complete_time,
+						"payout_status":payout_status,
+						"payout_complete_status":payout_complete_status
+					}
+
+					return jsonify({"status":"success","message":"Payout Berhasil","payout_data":response})
+				else:
+					return jsonify({"status":"error","message":"Saldo Tidak Mencukupi"})
+			else:
+				return jsonify({"status":"error","message":"User Not Found"})
+		except bson.errors.InvalidId:
+			return jsonify({"status":"error",'message':"InvalidId"})
+		except pymongo.errors.DuplicateKeyError as e:
+			return jsonify({"status":"error",'message':str(e)})
+		except KeyError:
+			return jsonify({"status":"error","message":"Invalid Key"})
+		except TypeError:
+			return jsonify({"status":"error","message":"More Data required"})
+
 api.add_resource(Resource_Index, '/api/index/')
 api.add_resource(resource_level_user, '/api/level_user/')
 api.add_resource(resource_user, '/api/user/')
 api.add_resource(resource_Verify_email, '/api/email-verification/')
 api.add_resource(resource_transaksi, '/api/transaction/')
 api.add_resource(Resource_Notification_Callback, '/api/notification-callback/')
+api.add_resource(Resource_payout, '/api/payout/')
 
 if __name__ == '__main__':
 	# create_tables()
