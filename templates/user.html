@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+  <title>Sodakohku API Reference</title>
+
+  <!-- General CSS Files -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+  <!-- CSS Libraries -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/a11y-dark.min.css">
+
+  <!-- Template CSS -->
+  <link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/components.css')}}">
+</head>
+
+<body>
+  <div id="app">
+    <div class="main-wrapper">
+      <div class="navbar-bg"></div>
+      <nav class="navbar navbar-expand-lg main-navbar">
+        <form class="form-inline mr-auto">
+          <ul class="navbar-nav mr-3">
+            <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg"><i class="fas fa-bars"></i></a></li>
+            <li><a href="#" data-toggle="search" class="nav-link nav-link-lg d-sm-none"><i class="fas fa-search"></i></a></li>
+          </ul>
+          <div class="search-element">
+            <input class="form-control" type="search" placeholder="Search" aria-label="Search" data-width="250">
+            <button class="btn" type="submit"><i class="fas fa-search"></i></button>
+          </div>
+        </form>
+      </nav>
+      <div class="main-sidebar">
+        <aside id="sidebar-wrapper">
+          <div class="sidebar-brand">
+            <a href="/">Sodakohku</a>
+          </div>
+          <div class="sidebar-brand sidebar-brand-sm">
+            <a href="/">SDK</a>
+          </div>
+          <ul class="sidebar-menu">
+              <li class="menu-header">Dashboard</li>
+              <li><a class="nav-link" href="/"><i class="fas fa-fire"></i> <span>Dashboard</span></a></li>
+              <li class="menu-header">Core</li>
+              <li><a class="nav-link" href="/docs/level-user/"><i class="fas fa-pencil-ruler"></i> <span>Level User</span></a></li>
+              <li class="active"><a class="nav-link" href="/docs/user/"><i class="fas fa-user"></i> <span>User</span></a></li>
+              <li><a class="nav-link" href="/docs/transaction/"><i class="fas fa-hand-holding-usd"></i> <span>Transaction</span></a></li>
+              <li><a class="nav-link" href="/docs/payout/"><i class="fas fa-dollar-sign"></i> <span>Payout</span></a></li>
+            </ul>
+        </aside>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <section class="section">
+          <div class="section-header">
+            <h1>Documentation</h1>
+          </div>
+          <div class="section-body">
+            <h2 class="section-title">Query</h2>
+            <p class="section-lead">Untuk mengambil data user bisa menggunakan method <b>GET</b> pada Api URL Endpoint: <b>https://sodakohku.herokuapp.com/api/<br>user/</b></p>
+            <div class="row">
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4>Example:</h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Python</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="Python">import requests <br>url = "https://sodakohku.herokuapp.com/api/user/" <br>request = requests.get(url)</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4></h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Response</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="JSON">{
+  "data": [
+    {
+      "email": "mastya@gmail.com",
+      "email_verify": false,
+      "id_level": "5f2412d50c9ba5b27d0876c5",
+      "id_user": "5f2416dd6993ff289ffc5219",
+      "nama_level": "admin",
+      "password": "inimastya",
+      "saldo": 0,
+      "username": "MasTya"
+    },
+    {
+      "email": "testingSodakoh@gmail.com",
+      "email_verify": false,
+      "id_level": "5f2416856993ff289ffc5218",
+      "id_user": "5f2808ee49a26f11e2bb0192",
+      "nama_level": "Regular",
+      "password": "12345678",
+      "saldo": 0,
+      "username": "UserSodakoh123"
+    }
+  ],
+  "status": "success"
+}</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <p class="section-lead">
+              Atau anda bisa menggunakan salah satu parameter berikut:
+            </p>
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>Params</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>id_user</td>
+                  <td>String</td>
+                  <td>Query berdasarkan id</td>
+                </tr>
+                <tr>
+                  <td>username</td>
+                  <td>String</td>
+                  <td>Query berdasarkan username</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="row">
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4>Example Query by id:</h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Python</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="Python">import requests <br>url = "https://sodakohku.herokuapp.com/api/user/" <br>params = {"id_user":"5f2808ee49a26f11e2bb0192"}<br>request = requests.get(url, params=params)</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4></h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Response</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="JSON">{
+  "data": {
+    "email": "testingSodakoh@gmail.com",
+    "email_verify": false,
+    "id_level": "5f2416856993ff289ffc5218",
+    "id_user": "5f2808ee49a26f11e2bb0192",
+    "nama_level": "Regular",
+    "password": "12345678",
+    "saldo": 0,
+    "username": "UserSodakoh123"
+  },
+  "status": "success"
+}</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4>Example Query by username:</h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Python</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="Python">import requests <br>url = "https://sodakohku.herokuapp.com/api/user/" <br>params = {"username":"UserSodakoh123"}<br>request = requests.get(url, params=params)</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4></h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Response</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="JSON">{
+  "data": {
+    "email": "testingSodakoh@gmail.com",
+    "email_verify": false,
+    "id_level": "5f2416856993ff289ffc5218",
+    "id_user": "5f2808ee49a26f11e2bb0192",
+    "nama_level": "Regular",
+    "password": "12345678",
+    "saldo": 0,
+    "username": "UserSodakoh123"
+  },
+  "status": "success"
+}</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-body">
+            <h2 class="section-title">Insert</h2>
+            <p class="section-lead">Untuk Menambah data user bisa menggunakan method <b>POST</b> pada Api URL Endpoint: <b>https://sodakohku.herokuapp.com/api/<br>user/</b> data yang diperlukan sebagai berikut.</p>
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>JSON Attribute</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>id_level</td>
+                  <td>String</td>
+                  <td>Hak akses yang akan diberikan.</td>
+                </tr>
+                <tr>
+                  <td>email</td>
+                  <td>String</td>
+                  <td>Email user yang akan ditambahkan</td>
+                </tr>
+                <tr>
+                  <td>username</td>
+                  <td>String</td>
+                  <td>Username unik</td>
+                </tr>
+                <tr>
+                  <td>password</td>
+                  <td>String</td>
+                  <td>Password user yang akan ditambahkan</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="section-lead">Setelah request selesai. Anda akan mendapat response dari server sebagai berikut:</p>
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>JSON Attribute</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>status</td>
+                  <td>String</td>
+                  <td>Status code request possible "success" or "error" </td>
+                </tr>
+                <tr>
+                  <td>message</td>
+                  <td>String</td>
+                  <td>Pesan dari server</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="row">
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4>Example:</h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Python</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="Python">import requests <br>url = "https://sodakohku.herokuapp.com/api/user/" <br>data = {
+    "id_level":"5f2416856993ff289ffc5218",
+    "email":"testingSodakoh@gmail.com",
+    "username":"UserSodakoh123",
+    "password":"12345678"
+}<br>request = requests.post(url, json=data)</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4></h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Response</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="JSON">{
+  "message": "user created",
+  "status": "success"
+}</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-body">
+            <h2 class="section-title">Update</h2>
+            <p class="section-lead">Untuk Mengubah data user bisa menggunakan method <b>PUT</b> pada Api URL Endpoint: <b>https://sodakohku.herokuapp.com/api/<br>user/</b> data yang diperlukan sebagai berikut.</p>
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>JSON Attribute</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>id_user</td>
+                  <td>String</td>
+                  <td>id dari user yang akan diubah.</td>
+                </tr>
+                <tr>
+                  <td>username</td>
+                  <td>String</td>
+                  <td>Username baru Harus unik dan tidak boleh kembar.</td>
+                </tr>
+                <tr>
+                  <td>password</td>
+                  <td>String</td>
+                  <td>Password baru Harus unik dan tidak boleh kembar.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="section-lead">Setelah request selesai. Anda akan mendapat response dari server sebagai berikut:</p>
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>JSON Attribute</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>status</td>
+                  <td>String</td>
+                  <td>Status code request possible "success" or "error" </td>
+                </tr>
+                <tr>
+                  <td>message</td>
+                  <td>String</td>
+                  <td>Pesan dari server</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="row">
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4>Example:</h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Python</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="Python">import requests <br>url = "https://sodakohku.herokuapp.com/api/user/" <br>data = {
+    "id_user":"5f2808ee49a26f11e2bb0192",
+    "username":"UserBaruSodakoh123",
+    "password":"99995555"
+}<br>request = requests.put(url, json=data)</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4></h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Response</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="JSON">{
+  "message": "User Updated",
+  "status": "success"
+}</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-body">
+            <h2 class="section-title">Delete</h2>
+            <p class="section-lead">Untuk Menghapus data user bisa menggunakan method <b>Delete</b> pada Api URL Endpoint: <b>https://sodakohku.herokuapp.com/api/<br>user/</b> Parameter yang diperlukan sebagai berikut.</p>
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>Parameters</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>id_user</td>
+                  <td>String</td>
+                  <td>id dari user yang akan dihapus.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="section-lead">Setelah request selesai. Anda akan mendapat response dari server sebagai berikut:</p>
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>JSON Attribute</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>status</td>
+                  <td>String</td>
+                  <td>Status code request possible "success" or "error" </td>
+                </tr>
+                <tr>
+                  <td>message</td>
+                  <td>String</td>
+                  <td>Pesan dari server</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="row">
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4>Example:</h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Python</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="Python">import requests <br>url = "https://sodakohku.herokuapp.com/api/user/" <br>params = {"id_user":"5f2808ee49a26f11e2bb0192"}<br>request = requests.delete(url, params=params)</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4></h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Response</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="JSON">{
+  "message": "user deleted",
+  "status": "success"
+}</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="section-body">
+            <h2 class="section-title">Verification Email Address</h2>
+            <p class="section-lead">Untuk Memverifikasi email user bisa menggunakan method <b>GET</b> pada Api URL Endpoint: <b>https://sodakohku.herokuapp.com/api/<br>email-verification/</b> Parameter yang diperlukan sebagai berikut.</p>
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>Parameters</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>id_user</td>
+                  <td>String</td>
+                  <td>id dari user yang akan diverifikasi.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="section-lead">Setelah request selesai. Anda akan mendapat response dari server sebagai berikut:</p>
+            <table class="table table-responsive">
+              <thead>
+                <tr>
+                  <th>JSON Attribute</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>status</td>
+                  <td>String</td>
+                  <td>Status code request possible "success" or "error" </td>
+                </tr>
+                <tr>
+                  <td>message</td>
+                  <td>String</td>
+                  <td>Pesan dari server</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="row">
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4>Example:</h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Python</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="Python">import requests <br>url = "https://sodakohku.herokuapp.com/api/email-verification/" <br>params = {"id_user":"5f2808ee49a26f11e2bb0192"}<br>request = requests.get(url, params=params)</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-sm-6 col-lg-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h4></h4>
+                  </div>
+                  <div class="card-body">
+                    <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="home-tab2" data-toggle="tab" href="#example1" role="tab" aria-controls="home" aria-selected="true">Response</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content tab-bordered" id="myTab3Content">
+                      <div class="tab-pane fade show active" id="example1" role="tabpanel" aria-labelledby="home-tab2">
+                        <pre><code class="JSON">{
+  "message": "User verified",
+  "status": "success"
+}</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <footer class="main-footer">
+        <div class="footer-left">
+          Copyright &copy; 2020 <div class="bullet"></div> Create By <a href="https://github.com/ArikSetyawan/">Arik Setyawan</a>
+        </div>
+        <div class="footer-right">
+          0.1.0
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- General JS Scripts -->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.7.6/jquery.nicescroll.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+  <script src="{{url_for('static',filename='js/stisla.js')}}"></script>
+
+  <!-- JS Libraies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+
+  <!-- Template JS File -->
+  <script src="{{url_for('static',filename='js/scripts.js')}}"></script>
+  <script src="{{url_for('static',filename='js/custom.js')}}"></script>
+
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>

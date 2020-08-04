@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_restful import Api, Resource, reqparse
 # from peewee import *
 
@@ -38,13 +38,13 @@ import pymongo, datetime, bson, requests, base64, time, random, string
 # 	payment_confirm = BooleanField(default=False)
 # 	waktu_transaksi = DateTimeField()
 # 	waktu_payment = DateTimeField(null=True)
-# 	transaction_id = CharField(unique=True)
+# 	payment_detail = CharField(unique=True)
 #	va = CharField()
 # 	status = CharField()
 
 # class payout(BaseModel):
 # 	id = AutoField()
-# 	payout_id = CharField(unique = True)
+# 	payout_number = CharField(unique = True)
 # 	id_user = ForeignKeyField(user)
 # 	nominal = IntegerField()
 # 	bank_name = CharField()
@@ -70,14 +70,11 @@ mongo = PyMongo(app)
 app.config['CLIENT_KEY'] = "SB-Mid-client-Om38rLxsnGsMmu7V"
 app.config['SERVER_KEY'] = "SB-Mid-server-LHqFToQlQDGPCJ2nJH66Mcyu"
 
-class Resource_Index(Resource):
-	def get(self):
-		return jsonify({"hasil":"Berhasil Membuat Api"})
 
 class resource_level_user(Resource):
 	def get(self):
 		parser = reqparse.RequestParser()
-		parser.add_argument('id_level',type=int,help="id_level, must int")
+		parser.add_argument('id_level',type=str,help="id_level, must str")
 		args = parser.parse_args()
 		if args['id_level'] is None:
 			data_level = []
@@ -90,14 +87,14 @@ class resource_level_user(Resource):
 				data_level.append(data)
 			return jsonify({'status':"success",'data':data_level})
 		else:
-			try:
-				data_level_user = level_user.get(level_user.id == args['id_level'])
+			data_level_user = mongo.db.level_user.find_one({"_id":ObjectId(args['id_level'])})
+			if data_level_user is not None:
 				data_level = {}
-				data_level['id'] = data_level_user.id
-				data_level['nama_level'] = data_level_user.nama_level
+				data_level['id'] = str(data_level_user['_id'])
+				data_level['nama_level'] = data_level_user['nama_level']
 				return jsonify({'status':"success",'data':data_level})
-			except DoesNotExists:
-				return jsonify({"status":"Gagal","message":"Data not found"})
+			else:
+				return jsonify({"status":"error","message":"Level User Not Found"})
 
 	def post(self):
 		try:
@@ -312,7 +309,7 @@ class resource_transaksi(Resource):
 				data['payment_confirm'] = i['payment_confirm']
 				data['waktu_transaksi'] = i['waktu_transaksi']
 				data['waktu_payment'] = i['waktu_payment']
-				data['transaction_id'] = i['transaction_id']
+				data['payment_method'] = i['payment_method']
 				data['va'] = i['va']
 				data['order_id'] = i['order_id']
 				# get user/receiver
@@ -367,7 +364,7 @@ class resource_transaksi(Resource):
 						data['payment_confirm'] = i['payment_confirm']
 						data['waktu_transaksi'] = i['waktu_transaksi']
 						data['waktu_payment'] = i['waktu_payment']
-						data['transaction_id'] = i['transaction_id']
+						data['payment_method'] = i['payment_method']
 						data['va'] = i['va']
 						data['order_id'] = i['order_id']
 						data_transaksi.append(data)
@@ -390,7 +387,7 @@ class resource_transaksi(Resource):
 					"payment_confirm":query_transaksi['payment_confirm'],
 					"waktu_transaksi":query_transaksi['waktu_transaksi'],
 					"waktu_payment":query_transaksi['waktu_payment'],
-					"transaction_id":query_transaksi['transaction_id'],
+					'payment_method' : query_transaksi['payment_method'],
 					"va":query_transaksi['va'],
 					"order_id":query_transaksi['order_id']
 				}
@@ -429,7 +426,6 @@ class resource_transaksi(Resource):
 			payment_confirm = False
 			waktu_transaksi = None
 			waktu_payment = None
-			transaction_id = None
 			va = None
 			order_id = 'TRX'+''.join(random.choice(string.digits) for _ in range(14))
 
@@ -505,15 +501,12 @@ class resource_transaksi(Resource):
 						if req.json()['status_code'] == '201':
 							req = req.json()
 							if payment_method == 'permata':
-								transaction_id = req['transaction_id']
 								va = req['permata_va_number']
 								waktu_transaksi = datetime.datetime.strptime(req['transaction_time'], '%Y-%m-%d %H:%M:%S')
 							elif payment_method == 'bca':
-								transaction_id = req['transaction_id']
 								va = req['va_numbers'][0]['va_number']
 								waktu_transaksi = datetime.datetime.strptime(req['transaction_time'], '%Y-%m-%d %H:%M:%S')
 							elif payment_method == 'bni':
-								transaction_id = req['transaction_id']
 								va = req['va_numbers'][0]['va_number']
 								waktu_transaksi = datetime.datetime.strptime(req['transaction_time'], '%Y-%m-%d %H:%M:%S')
 							else:
@@ -529,15 +522,42 @@ class resource_transaksi(Resource):
 									"payment_confirm":payment_confirm,
 									"waktu_transaksi":waktu_transaksi,
 									"waktu_payment":waktu_payment,
-									"transaction_id":transaction_id,
 									"payment_method":payment_method,
+									"payment_detail":req,
 									"va":va,
 									"order_id":order_id,
 									"status":"Pending"
 								}
 							)
 
-							return jsonify({"status":"success","message":"Transaksi {} Berhasil Dibuat. Silahkan Transfer ke {} Nomer Rekening : {}".format(order_id,payment_method,va)})
+							data_user = {}
+							data_user['id_user'] = str(cek_user['_id'])
+							data_user['id_level'] = str(cek_user['id_level'])
+							query_level_user = mongo.db.level_user.find_one({'_id':ObjectId(cek_user['id_level'])})
+							if query_level_user is not None:
+								data_user['nama_level'] = query_level_user['nama_level']
+							else:
+								pass
+							data_user['email'] = cek_user['email']
+							data_user['username'] = cek_user['username']
+							data_user['password'] = cek_user['password']
+							data_user['saldo'] = cek_user['saldo']
+							data_user['email_verify'] = cek_user['email_verify']
+
+							response = {
+								"receiver":data_user,
+								"donatur":donatur,
+								"pesan":pesan,
+								"nominal":nominal,
+								"email":email,
+								"waktu_transaksi":waktu_transaksi,
+								"payment_method":payment_method,
+								"va":va,
+								"order_id":order_id,
+								"status":"Pending"
+							}
+
+							return jsonify({"status":"success","data":response,"message":"Transaksi {} Berhasil Dibuat. Silahkan Transfer ke {} Nomer Rekening : {}".format(order_id,payment_method,va)})
 						else:
 							return jsonify({"status":"error","message":"something Wrong"})
 					else:
@@ -590,18 +610,18 @@ class Resource_payout(Resource):
 	def get(self):
 		parser = reqparse.RequestParser()
 		parser.add_argument('id_user',type=str,help='id_user must str')
-		parser.add_argument('payout_id', type=str, help='payout_id, must str')
+		parser.add_argument('payout_number', type=str, help='payout_number, must str')
 		args = parser.parse_args()
 
-		if args['id_user'] is not None and args['payout_id'] is not None:
+		if args['id_user'] is not None and args['payout_number'] is not None:
 			return jsonify({"status":"error",'message':'Tolong Pilih Salah satu parameter'})
-		elif args['id_user'] is None and args['payout_id'] is None:
+		elif args['id_user'] is None and args['payout_number'] is None:
 			data_payout = []
 			query_all_payout = mongo.db.payout.find()
 			for i in query_all_payout:
 				data  = {}
 				data['id'] = str(i['_id'])
-				data['payout_id'] = i['payout_id']
+				data['payout_number'] = i['payout_number']
 				data['id_user'] = i['id_user']
 				data['nominal'] = i['nominal']
 				data['bank_name'] = i['bank_name']
@@ -656,7 +676,7 @@ class Resource_payout(Resource):
 					for i in query_payout:
 						data  = {}
 						data['id'] = str(i['_id'])
-						data['payout_id'] = i['payout_id']
+						data['payout_number'] = i['payout_number']
 						data['id_user'] = i['id_user']
 						data['nominal'] = i['nominal']
 						data['bank_name'] = i['bank_name']
@@ -674,11 +694,11 @@ class Resource_payout(Resource):
 				return jsonify({"status":"error",'message':"InvalidId"})
 		else:
 			# query payout
-			query_payout = mongo.db.payout.find_one({'payout_id':args['payout_id']})
+			query_payout = mongo.db.payout.find_one({'payout_number':args['payout_number']})
 			if query_payout is not None:
 				data_payout = {}
 				data_payout['id'] = str(query_payout['_id'])
-				data_payout['payout_id'] = query_payout['payout_id']
+				data_payout['payout_number'] = query_payout['payout_number']
 				data_payout['id_user'] = query_payout['id_user']
 				data_payout['nominal'] = query_payout['nominal']
 				data_payout['bank_name'] = query_payout['bank_name']
@@ -714,7 +734,7 @@ class Resource_payout(Resource):
 	def post(self):
 		try:
 			data = request.json
-			payout_id = 'PAYOUT'+''.join(random.choice(string.digits) for _ in range(14))
+			payout_number = 'PAYOUT'+''.join(random.choice(string.digits) for _ in range(14))
 			id_user = str(data['id_user'])
 			nominal = int(data['nominal'])
 			bank_name = str(data['bank_name'])
@@ -735,7 +755,7 @@ class Resource_payout(Resource):
 				if query_user['saldo'] >= nominal:
 					# insert to db
 					payout_data = {
-						"payout_id":payout_id,
+						"payout_number":payout_number,
 						"id_user":id_user,
 						"nominal":nominal,
 						"bank_name":bank_name,
@@ -751,7 +771,7 @@ class Resource_payout(Resource):
 					update_saldo = mongo.db.user.update({"_id":ObjectId(id_user)},{"$set":{"saldo":query_user['saldo']-nominal}})
 
 					response = {
-						"payout_id":payout_id,
+						"payout_number":payout_number,
 						"id_user":str(query_user['_id']),
 						"nominal":nominal,
 						"bank_name":bank_name,
@@ -763,7 +783,7 @@ class Resource_payout(Resource):
 						"payout_complete_status":payout_complete_status
 					}
 
-					return jsonify({"status":"success","message":"Payout Berhasil","payout_data":response})
+					return jsonify({"status":"success","message":"Payout Berhasil","data":response})
 				else:
 					return jsonify({"status":"error","message":"Saldo Tidak Mencukupi"})
 			else:
@@ -777,14 +797,64 @@ class Resource_payout(Resource):
 		except TypeError:
 			return jsonify({"status":"error","message":"More Data required"})
 
-api.add_resource(Resource_Index, '/api/index/')
+class Resource_payout_complete(Resource):
+	def get(self):
+		parser = reqparse.RequestParser()
+		parser.add_argument("payout_number",type=str,required=True,help='payout_number, must str, required')
+		args = parser.parse_args()
+
+		cek_payout = mongo.db.payout.find_one({'payout_number':args['payout_number']})
+		if cek_payout is not None:
+			if cek_payout['payout_complete_status'] == False:
+				update_payout = mongo.db.payout.update({"payout_number":args['payout_number']},{"$set":{"payout_complete_status":True,"payout_complete_time":datetime.datetime.now(),"payout_status":"Complete"}})
+				get_payout_data = mongo.db.payout.find_one({'payout_number':args['payout_number']})
+				data_payout = {
+					"id":str(get_payout_data['_id']),
+					"payout_number":get_payout_data['payout_number'],
+					"id_user":get_payout_data['id_user'],
+					"nominal":get_payout_data['nominal'],
+					"bank_name":get_payout_data['bank_name'],
+					"nomor_rekening":get_payout_data['nomor_rekening'],
+					"nama_rekening":get_payout_data['nama_rekening'],
+					"payout_request_time":get_payout_data['payout_request_time'],
+					"payout_complete_time":get_payout_data['payout_complete_time'],
+					"payout_status":get_payout_data['payout_status'],
+					"payout_complete_status":get_payout_data['payout_complete_status']
+				}
+				return jsonify({"status":"success","message":"Payout Berhasil Diselesaikan","data":data_payout})
+			else:
+				return jsonify({"status":"error","message":"Payout Sudah Diselesaikan"})
+		else:
+			return jsonify({"status":"error","message":"payout_number not found"})
+
 api.add_resource(resource_level_user, '/api/level_user/')
 api.add_resource(resource_user, '/api/user/')
 api.add_resource(resource_Verify_email, '/api/email-verification/')
 api.add_resource(resource_transaksi, '/api/transaction/')
 api.add_resource(Resource_Notification_Callback, '/api/notification-callback/')
 api.add_resource(Resource_payout, '/api/payout/')
+api.add_resource(Resource_payout_complete, "/api/mark-payout/")
+
+@app.route('/')
+def index():
+	return render_template("index.html")
+
+@app.route('/docs/level-user/')
+def docs_level_user():
+	return render_template('level_user.html')
+
+@app.route('/docs/user/')
+def docs_user():
+	return render_template('user.html')
+
+@app.route('/docs/transaction/')
+def docs_transaction():
+	return render_template('transaction.html')
+
+@app.route('/docs/payout/')
+def docs_payout():
+	return render_template('payout.html')
 
 if __name__ == '__main__':
 	# create_tables()
-	app.run(debug=True)
+	app.run(debug=True, port=5001)
